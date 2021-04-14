@@ -1,8 +1,17 @@
-#include <IRremoteESP8266.h>
-#include <IRrecv.h>
-#include <IRutils.h>
+#include "IRremoteESP8266.h"
+#include "IRrecv.h"
+#include "IRutils.h"
+
+#include "ESP8266WiFi.h"
+#include "ESP8266HTTPClient.h"
+#include "WiFiClient.h"
 
 #define reciever_pin D5  // GPIO 14
+
+#define SERVER_NAME "ESP32_infared_server"
+#define SERVER_PASSWORD "2A(2v_!!*qaL"
+
+#define SERVER_ACCESS "http://192.168.4.1/"  // server address
 
 IRrecv irrecv(reciever_pin);
 
@@ -12,7 +21,18 @@ void setup(void) {
     Serial.begin(115200);
     Serial.println("Starting ESP8266 and Infrared...");
     irrecv.enableIRIn();
-    irrecv.blink13(true);
+    /* irrecv.blink13(true); */
+
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(SERVER_NAME, SERVER_PASSWORD);
+    Serial.print("Connecting...");
+    while (WiFi.status() != WL_CONNECTED) { 
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("");
+    Serial.print("Connected to WiFi network with IP Address: ");
+    Serial.println(WiFi.localIP());
 }
 
 void loop(void) {
@@ -20,6 +40,24 @@ void loop(void) {
         dump(&results);
         serialPrintUint64(results.value, HEX);
         Serial.println("");
+
+        if (WiFi.status() == WL_CONNECTED) {
+            WiFiClient client;
+            HTTPClient http;
+            String server_adress = SERVER_ACCESS;
+            server_adress += "?connected=";
+            server_adress += (results.value == 0x0105FF) ? "1" : "0";  // TODO: check if it actually works
+            http.begin(client, server_adress);
+            int httpCode = http.GET();
+            if (httpCode > 0) {
+                Serial.println("Success");
+            } else {
+                Serial.print("Error: ");
+                Serial.println(httpCode);
+            }
+            http.end();
+        }
+
         irrecv.resume();
     }
     delay(100);
