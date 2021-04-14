@@ -36,31 +36,33 @@ void setup(void) {
 }
 
 void loop(void) {
+    uint64_t recieved_data = NAN;
     if (irrecv.decode(&results)) {
         dump(&results);
         serialPrintUint64(results.value, HEX);
         Serial.println("");
-
-        if (WiFi.status() == WL_CONNECTED) {
-            WiFiClient client;
-            HTTPClient http;
-            String server_adress = SERVER_ACCESS;
-            server_adress += "?connected=";
-            server_adress += (results.value == 0x0105FF) ? "1" : "0";  // TODO: check if it actually works
-            http.begin(client, server_adress);
-            int httpCode = http.GET();
-            if (httpCode > 0) {
-                Serial.println("Success");
-            } else {
-                Serial.print("Error: ");
-                Serial.println(httpCode);
-            }
-            http.end();
-        }
-
+        recieved_data = results.value;
         irrecv.resume();
     }
-    delay(100);
+
+    if (WiFi.status() == WL_CONNECTED) {
+        WiFiClient client;
+        HTTPClient http;
+        String server_adress = SERVER_ACCESS;
+        server_adress += "?connected=";
+        server_adress += (recieved_data == 0xFFE01F) ? "1" : "0";  // TODO: check if it actually works
+        http.begin(client, server_adress);
+        int httpCode = http.GET();
+        if (httpCode > 0) {
+            Serial.println("Success");
+        } else {
+            Serial.print("Error: ");
+            Serial.println(httpCode);
+        }
+        http.end();
+    }
+
+    delay(500);
 }
 
 void dump(decode_results *results) {
@@ -80,7 +82,7 @@ void dump(decode_results *results) {
     else if (results->decode_type == RC6) {
         Serial.print("Decoded RC6: ");
     } else {
-        Serial.print("NOOO... MY DECODING COLLECTION ");
+        Serial.print("NOOO... MY DECODING COLLECTION: ");
         Serial.print(results->decode_type);
         Serial.print(" ");
     }
