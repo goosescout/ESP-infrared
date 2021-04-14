@@ -17,6 +17,8 @@ IRrecv irrecv(reciever_pin);
 
 decode_results results;
 
+String previously_sent;
+
 void setup(void) {
     Serial.begin(115200);
     Serial.println("Starting ESP8266 and Infrared...");
@@ -45,15 +47,17 @@ void loop(void) {
         irrecv.resume();
     }
 
-    if (WiFi.status() == WL_CONNECTED) {
+    String server_adress = SERVER_ACCESS;
+    server_adress += "?connected=";
+    server_adress += (recieved_data == 0xFFE01F) ? "1" : "0";
+
+    if (WiFi.status() == WL_CONNECTED && previously_sent != server_adress) {
         WiFiClient client;
         HTTPClient http;
-        String server_adress = SERVER_ACCESS;
-        server_adress += "?connected=";
-        server_adress += (recieved_data == 0xFFE01F) ? "1" : "0";  // TODO: check if it actually works
         http.begin(client, server_adress);
         int httpCode = http.GET();
         if (httpCode > 0) {
+            previously_sent = server_adress;
             Serial.println("Success");
         } else {
             Serial.print("Error: ");
