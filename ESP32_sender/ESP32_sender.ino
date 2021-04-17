@@ -20,7 +20,7 @@
 
 #define volume_level 20  // уровень громкости, 0-30
 #define responce_time 500  // время в мс, через которое отправляются запросы по инфракрасному каналу
-/* END OF TUABLE PARAMETERS */
+/* END OF TUNABLE PARAMETERS */
 
 AsyncWebServer server(80);
 
