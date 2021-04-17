@@ -32,7 +32,8 @@ void processRequest(AsyncWebServerRequest *request) {
         if (player_started) {
             myDFPlayer.start();
         } else {
-            myDFPlayer.loop(1);
+            // проигрывание музыки (папка с номером 01):
+            myDFPlayer.loopFolder(1);
             player_started = true;
         }
     } else {
@@ -62,7 +63,7 @@ void setup(void) {
 
     myDFPlayer.begin(mySoftwareSerial);
     Serial.println("DFPlayer Mini online");
-    myDFPlayer.setTimeOut(500);  // timeout - 100ms
+    myDFPlayer.setTimeOut(500);
     myDFPlayer.volume(20);  // set volume value (0-30).
 }
 
@@ -97,7 +98,7 @@ void printDetail(uint8_t type, int value){
     case DFPlayerPlayFinished:
       Serial.print(F("Number:"));
       Serial.print(value);
-      Serial.println(F(" Play Finished!"));
+      Serial.println(F("Play Finished!"));
       break;
     case DFPlayerError:
       Serial.print(F("DFPlayerError:"));
