@@ -19,8 +19,10 @@ AsyncWebServer server(80);
 
 IRsend irsend(sender_pin);
 
-SoftwareSerial mySoftwareSerial(10, 11); // RX, TX
+HardwareSerial mySoftwareSerial(1);
 DFRobotDFPlayerMini myDFPlayer;
+
+void printDetail(uint8_t type, int value);
 
 bool player_started = false;
 
@@ -44,6 +46,7 @@ void processRequest(AsyncWebServerRequest *request) {
 
 void setup(void) {
     Serial.begin(115200);
+    mySoftwareSerial.begin(9600, SERIAL_8N1, 16, 17);  // speed, type, RX, TX
     Serial.println("Starting ESP32 and Infrared...");
     irsend.begin();
 
@@ -60,7 +63,7 @@ void setup(void) {
     myDFPlayer.begin(mySoftwareSerial);
     Serial.println("DFPlayer Mini online");
     myDFPlayer.setTimeOut(500);  // timeout - 100ms
-    myDFPlayer.volume(10);  // set volume value (0-30).
+    myDFPlayer.volume(20);  // set volume value (0-30).
 }
 
 void loop(void) {
