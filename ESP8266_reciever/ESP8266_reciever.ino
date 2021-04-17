@@ -38,7 +38,7 @@ void setup(void) {
 }
 
 void loop(void) {
-    uint64_t recieved_data = NAN;
+    uint64_t recieved_data = 0;
     if (irrecv.decode(&results)) {
         dump(&results);
         serialPrintUint64(results.value, HEX);
@@ -64,6 +64,17 @@ void loop(void) {
             Serial.println(httpCode);
         }
         http.end();
+    } 
+
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.print("Wifi disconnected. Trying to connect again");
+        while (WiFi.status() != WL_CONNECTED) { 
+            delay(500);
+            Serial.print(".");
+        }
+         Serial.println("");
+        Serial.print("Connected to WiFi network with IP Address: ");
+        Serial.println(WiFi.localIP());
     }
 
     delay(500);

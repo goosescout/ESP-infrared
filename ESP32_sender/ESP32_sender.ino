@@ -13,7 +13,14 @@
 #define SERVER_NAME "ESP32_infared_server"
 #define SERVER_PASSWORD "2A(2v_!!*qaL"
 
-#define sender_pin 27  // any empty pin
+/* TUNABLE PARAMETERS */
+#define sender_pin 27  // любой свободный пин
+#define rx_pin 16  // rx пин, лучше не менять
+#define tx_pin 17  // tx пин, лучше не менять
+
+#define volume_level 20  // уровень громкости, 0-30
+#define responce_time 500  // время в мс, через которое отправляются запросы по инфракрасному каналу
+/* END OF TUABLE PARAMETERS */
 
 AsyncWebServer server(80);
 
@@ -47,7 +54,7 @@ void processRequest(AsyncWebServerRequest *request) {
 
 void setup(void) {
     Serial.begin(115200);
-    mySoftwareSerial.begin(9600, SERIAL_8N1, 16, 17);  // speed, type, RX, TX
+    mySoftwareSerial.begin(9600, SERIAL_8N1, rx_pin, tx_pin);  // speed, type, RX, TX
     Serial.println("Starting ESP32 and Infrared...");
     irsend.begin();
 
@@ -64,14 +71,14 @@ void setup(void) {
     myDFPlayer.begin(mySoftwareSerial);
     Serial.println("DFPlayer Mini online");
     myDFPlayer.setTimeOut(500);
-    myDFPlayer.volume(20);  // set volume value (0-30).
+    myDFPlayer.volume(volume_level);  // громкость (0-30)
 }
 
 void loop(void) {
     static unsigned long timer = millis();
-    if (millis() - timer > 500) {
+    if (millis() - timer > responce_time) {
         timer = millis();
-        irsend.sendNEC(0x00FFE01FUL);
+        irsend.sendNEC(0x00FFE01FUL);  // data - FFE01F
     }
     if (myDFPlayer.available()) {
         printDetail(myDFPlayer.readType(), myDFPlayer.read());
@@ -98,7 +105,7 @@ void printDetail(uint8_t type, int value){
     case DFPlayerPlayFinished:
       Serial.print(F("Number:"));
       Serial.print(value);
-      Serial.println(F("Play Finished!"));
+      Serial.println(F(" Play Finished!"));
       break;
     case DFPlayerError:
       Serial.print(F("DFPlayerError:"));
