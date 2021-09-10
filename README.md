@@ -1,1 +1,1 @@
-# ESP_infrared
+# ESP-infrared
